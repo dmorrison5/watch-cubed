@@ -61,9 +61,11 @@ public class WatchList {
         checkPstmt.setInt(1, title.getId());
         ResultSet checkRs = checkPstmt.executeQuery();
         if (checkRs.next()) {
+            checkRs.close();
             checkPstmt.close();
             throw new IllegalArgumentException(titleName + " is already on your watch list.");
         }
+        checkRs.close();
         checkPstmt.close();
 
         String sql = "INSERT INTO watchlist (title_id, status) VALUES (?, ?)";
@@ -134,6 +136,7 @@ public class WatchList {
                     rs.getString("creator")
             ));
         }
+        rs.close();
         pstmt.close();
         return entries;
     }
