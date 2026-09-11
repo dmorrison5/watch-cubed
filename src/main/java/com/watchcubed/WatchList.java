@@ -141,15 +141,6 @@ public class WatchList {
         return entries;
     }
 
-    public void delete() throws SQLException {
-        Connection conn = DatabaseConnection.getConnection();
-        String sql = "DELETE FROM watchlist WHERE id = ?";
-        PreparedStatement pstmt = conn.prepareStatement(sql);
-        pstmt.setInt(1, this.id);
-        pstmt.executeUpdate();
-        pstmt.close();
-    }
-
     @Override
     public String toString() {
         return "WatchList{" +
