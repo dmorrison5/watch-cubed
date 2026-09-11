@@ -14,6 +14,10 @@ public class DatabaseConnection {
         // got closed somehow - no point reopening it every single call
         if (connection == null || connection.isClosed()) {
             connection = DriverManager.getConnection(DB_URL);
+            // enable foreign key enforcement
+            Statement stmt = connection.createStatement();
+            stmt.execute("PRAGMA foreign_keys = ON");
+            stmt.close();
         }
         return connection;
     }
@@ -27,7 +31,7 @@ public class DatabaseConnection {
         // not duplicating name/genre/year/etc everywhere
         String createTitlesTable = "CREATE TABLE IF NOT EXISTS titles (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "name TEXT NOT NULL UNIQUE, " +
+                "name TEXT NOT NULL UNIQUE COLLATE NOCASE, " +
                 "type TEXT NOT NULL CHECK (type IN ('Movie', 'TV Show')), " +
                 "genre TEXT, " +
                 "year INTEGER, " +
