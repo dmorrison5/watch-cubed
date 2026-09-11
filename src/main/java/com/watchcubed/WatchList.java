@@ -104,8 +104,12 @@ public class WatchList {
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, newStatus);
         pstmt.setInt(2, title.getId());
-        pstmt.executeUpdate();
+        int rowsAffected = pstmt.executeUpdate();
         pstmt.close();
+
+        if (rowsAffected == 0) {
+            throw new IllegalArgumentException(titleName + " is not currently on your watch list.");
+        }
     }
 
     public static List<WatchListEntry> getWatchList() throws SQLException {
