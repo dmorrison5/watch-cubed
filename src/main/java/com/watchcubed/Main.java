@@ -38,6 +38,7 @@ public class Main {
                 "View reviews",
                 "Edit title",
                 "Delete title",
+                "Search titles",
                 "Exit"
             };
 
@@ -75,6 +76,9 @@ public class Main {
                         deleteTitle();
                         break;
                     case "10":
+                        searchTitles();
+                        break;
+                    case "11":
                         running = false;
                         CLIFormatter.printSuccess("Goodbye!");
                         break;
@@ -331,5 +335,83 @@ public class Main {
 
         title.delete();
         CLIFormatter.printSuccess("Title deleted successfully!");
+    }
+
+    private static void searchTitles() throws SQLException {
+        String[] searchOptions = {
+            "Search by name",
+            "Search by creator",
+            "Search by genre",
+            "Search by year",
+            "Back"
+        };
+
+        CLIFormatter.printMenu(searchOptions);
+        String choice = scanner.nextLine().trim();
+
+        List<Title> results;
+
+        try {
+            switch (choice) {
+                case "1":
+                    System.out.print("Enter title name to search: ");
+                    String name = scanner.nextLine().trim();
+                    results = TitleSearch.searchByName(name);
+                    displaySearchResults(results);
+                    break;
+                case "2":
+                    System.out.print("Enter creator name to search: ");
+                    String creator = scanner.nextLine().trim();
+                    results = TitleSearch.searchByCreator(creator);
+                    displaySearchResults(results);
+                    break;
+                case "3":
+                    System.out.print("Enter genre to search: ");
+                    String genre = scanner.nextLine().trim();
+                    results = TitleSearch.searchByGenre(genre);
+                    displaySearchResults(results);
+                    break;
+                case "4":
+                    System.out.print("Enter year to search: ");
+                    int year;
+                    try {
+                        year = Integer.parseInt(scanner.nextLine().trim());
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("Year must be a valid number");
+                    }
+                    results = TitleSearch.getTitlesByYear(year);
+                    displaySearchResults(results);
+                    break;
+                case "5":
+                    return;
+                default:
+                    CLIFormatter.printError("Invalid option.");
+            }
+        } catch (IllegalArgumentException e) {
+            CLIFormatter.printError(e.getMessage());
+        }
+    }
+
+    private static void displaySearchResults(List<Title> results) {
+        if (results.isEmpty()) {
+            CLIFormatter.printInfo("No titles found.");
+            return;
+        }
+
+        String[] headers = {"Name", "Type", "Year", "Genre", "Creator"};
+        List<String[]> rows = new ArrayList<>();
+
+        for (Title title : results) {
+            rows.add(new String[] {
+                title.getName(),
+                title.getType(),
+                String.valueOf(title.getYear()),
+                title.getGenre(),
+                title.getCreator()
+            });
+        }
+
+        CLIFormatter.printHeader("Search Results");
+        CLIFormatter.printTable(headers, rows);
     }
 }
