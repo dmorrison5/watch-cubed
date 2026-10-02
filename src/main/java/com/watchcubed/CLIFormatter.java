@@ -7,9 +7,9 @@ public class CLIFormatter {
     private static final String RESET = "\u001B[0m";
     private static final String RED = "\u001B[31m";
     private static final String GREEN = "\u001B[32m";
-    private static final String YELLOW = "\u001B[33m";
     private static final String BLUE = "\u001B[34m";
     private static final String CYAN = "\u001B[36m";
+    private static final int MAX_COL_WIDTH = 30;
 
     /**
      * Clears the console screen
@@ -73,6 +73,11 @@ public class CLIFormatter {
             return;
         }
 
+        // Treat null rows as empty
+        if (rows == null) {
+            rows = new java.util.ArrayList<>();
+        }
+
         // Calculate column widths
         int[] columnWidths = new int[headers.length];
         for (int i = 0; i < headers.length; i++) {
@@ -81,8 +86,14 @@ public class CLIFormatter {
 
         for (String[] row : rows) {
             for (int i = 0; i < row.length && i < columnWidths.length; i++) {
-                columnWidths[i] = Math.max(columnWidths[i], row[i].length());
+                String cell = (row[i] == null) ? "" : row[i];
+                columnWidths[i] = Math.max(columnWidths[i], cell.length());
             }
+        }
+
+        // Cap column widths at MAX_COL_WIDTH
+        for (int i = 0; i < columnWidths.length; i++) {
+            columnWidths[i] = Math.min(columnWidths[i], MAX_COL_WIDTH);
         }
 
         // Print header
@@ -104,10 +115,14 @@ public class CLIFormatter {
     private static void printTableRow(String[] cells, int[] columnWidths, boolean isHeader) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < columnWidths.length; i++) {
-            String cell = (i < cells.length) ? cells[i] : "";
+            String cell = (i < cells.length && cells[i] != null) ? cells[i] : "";
             // Truncate cell if it's longer than column width
             if (cell.length() > columnWidths[i]) {
-                cell = cell.substring(0, columnWidths[i]);
+                if (columnWidths[i] <= 3) {
+                    cell = cell.substring(0, columnWidths[i]);
+                } else {
+                    cell = cell.substring(0, columnWidths[i] - 3) + "...";
+                }
             }
             // Left-align and pad with spaces
             sb.append(String.format("%-" + columnWidths[i] + "s", cell));
