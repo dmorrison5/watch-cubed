@@ -3,6 +3,7 @@ package com.watchcubed;
 import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.List;
+import java.util.ArrayList;
 
 public class Main {
     private static Scanner scanner = new Scanner(System.in);
@@ -13,30 +14,34 @@ public class Main {
             DatabaseConnection.initializeTables();
             showMenu();
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
+            CLIFormatter.printError("Database error: " + e.getMessage());
         } finally {
             try {
                 DatabaseConnection.closeConnection();
             } catch (SQLException e) {
-                System.err.println("Error closing database connection: " + e.getMessage());
+                CLIFormatter.printError("Error closing database connection: " + e.getMessage());
             }
         }
     }
 
     private static void showMenu() {
         while (running) {
-            System.out.println("\n=== Watch Cubed ===");
-            System.out.println("1. Add title");
-            System.out.println("2. Add to watch list");
-            System.out.println("3. Update watch status");
-            System.out.println("4. Add review");
-            System.out.println("5. View all titles");
-            System.out.println("6. View watch list");
-            System.out.println("7. View reviews");
-            System.out.println("8. Edit title");
-            System.out.println("9. Delete title");
-            System.out.println("10. Exit");
-            System.out.print("Choose an option: ");
+            CLIFormatter.printHeader("Watch Cubed");
+
+            String[] menuOptions = {
+                "Add title",
+                "Add to watch list",
+                "Update watch status",
+                "Add review",
+                "View all titles",
+                "View watch list",
+                "View reviews",
+                "Edit title",
+                "Delete title",
+                "Exit"
+            };
+
+            CLIFormatter.printMenu(menuOptions);
 
             String choice = scanner.nextLine().trim();
 
@@ -71,15 +76,15 @@ public class Main {
                         break;
                     case "10":
                         running = false;
-                        System.out.println("Goodbye!");
+                        CLIFormatter.printSuccess("Goodbye!");
                         break;
                     default:
-                        System.out.println("Invalid option. Please try again.");
+                        CLIFormatter.printError("Invalid option. Please try again.");
                 }
             } catch (IllegalArgumentException e) {
-                System.out.println("Error: " + e.getMessage());
+                CLIFormatter.printError(e.getMessage());
             } catch (SQLException e) {
-                System.err.println("Database error: " + e.getMessage());
+                CLIFormatter.printError("Database error: " + e.getMessage());
             }
         }
     }
@@ -115,7 +120,7 @@ public class Main {
 
         Title title = new Title(name, type, genre, year, creator);
         title.save();
-        System.out.println("Title added successfully!");
+        CLIFormatter.printSuccess("Title added successfully!");
     }
 
     private static void addToWatchList() throws SQLException {
@@ -126,7 +131,7 @@ public class Main {
         String status = scanner.nextLine().trim();
 
         WatchList.addToWatchList(titleName, status);
-        System.out.println("Added to watch list!");
+        CLIFormatter.printSuccess("Added to watch list!");
     }
 
     private static void updateWatchStatus() throws SQLException {
@@ -137,7 +142,7 @@ public class Main {
         String newStatus = scanner.nextLine().trim();
 
         WatchList.updateStatusByTitleName(titleName, newStatus);
-        System.out.println("Status updated!");
+        CLIFormatter.printSuccess("Status updated!");
     }
 
     private static void addReview() throws SQLException {
@@ -156,32 +161,54 @@ public class Main {
         String comment = scanner.nextLine().trim();
 
         Review.insertReview(titleName, rating, comment.isEmpty() ? null : comment);
-        System.out.println("Review added successfully!");
+        CLIFormatter.printSuccess("Review added successfully!");
     }
 
     private static void viewAllTitles() throws SQLException {
         List<Title> titles = Title.getAllTitles();
         if (titles.isEmpty()) {
-            System.out.println("No titles found.");
-        } else {
-            System.out.println("\n=== All Titles ===");
-            for (Title title : titles) {
-                System.out.println("- " + title.getName() + " (" + title.getType() + ", " + title.getYear() + ")");
-                System.out.println("  Genre: " + title.getGenre() + " | Creator: " + title.getCreator());
-            }
+            CLIFormatter.printInfo("No titles found.");
+            return;
         }
+
+        String[] headers = {"Name", "Type", "Year", "Genre", "Creator"};
+        List<String[]> rows = new ArrayList<>();
+
+        for (Title title : titles) {
+            rows.add(new String[] {
+                title.getName(),
+                title.getType(),
+                String.valueOf(title.getYear()),
+                title.getGenre(),
+                title.getCreator()
+            });
+        }
+
+        CLIFormatter.printHeader("All Titles");
+        CLIFormatter.printTable(headers, rows);
     }
 
     private static void viewWatchList() throws SQLException {
         List<WatchList.WatchListEntry> entries = WatchList.getWatchList();
         if (entries.isEmpty()) {
-            System.out.println("Your watch list is empty.");
-        } else {
-            System.out.println("\n=== Your Watch List ===");
-            for (WatchList.WatchListEntry entry : entries) {
-                System.out.println("- " + entry.toString());
-            }
+            CLIFormatter.printInfo("Your watch list is empty.");
+            return;
         }
+
+        String[] headers = {"Title", "Type", "Year", "Status"};
+        List<String[]> rows = new ArrayList<>();
+
+        for (WatchList.WatchListEntry entry : entries) {
+            rows.add(new String[] {
+                entry.getTitleName(),
+                entry.getType(),
+                String.valueOf(entry.getYear()),
+                entry.getStatus()
+            });
+        }
+
+        CLIFormatter.printHeader("Your Watch List");
+        CLIFormatter.printTable(headers, rows);
     }
 
     private static void viewReviews() throws SQLException {
@@ -192,24 +219,33 @@ public class Main {
         if (titleName.isEmpty()) {
             reviews = Review.getAllReviews();
             if (reviews.isEmpty()) {
-                System.out.println("No reviews found.");
-            } else {
-                System.out.println("\n=== All Reviews ===");
-                for (Review.ReviewEntry review : reviews) {
-                    System.out.println("- " + review.toString());
-                }
+                CLIFormatter.printInfo("No reviews found.");
+                return;
             }
+            CLIFormatter.printHeader("All Reviews");
         } else {
             reviews = Review.getReviewsForTitle(titleName);
             if (reviews.isEmpty()) {
-                System.out.println("No reviews found for this title.");
-            } else {
-                System.out.println("\n=== Reviews for " + titleName + " ===");
-                for (Review.ReviewEntry review : reviews) {
-                    System.out.println("- " + review.toString());
-                }
+                CLIFormatter.printInfo("No reviews found for this title.");
+                return;
             }
+            CLIFormatter.printHeader("Reviews for " + titleName);
         }
+
+        String[] headers = {"Title", "Type", "Year", "Rating", "Comment"};
+        List<String[]> rows = new ArrayList<>();
+
+        for (Review.ReviewEntry review : reviews) {
+            rows.add(new String[] {
+                review.getTitleName(),
+                review.getType(),
+                String.valueOf(review.getYear()),
+                String.valueOf(review.getRating()),
+                review.getComment() == null ? "" : review.getComment()
+            });
+        }
+
+        CLIFormatter.printTable(headers, rows);
     }
 
     private static void editTitle() throws SQLException {
@@ -266,7 +302,7 @@ public class Main {
 
         try {
             title.update();
-            System.out.println("Title updated successfully!");
+            CLIFormatter.printSuccess("Title updated successfully!");
         } catch (SQLException e) {
             if (e.getMessage().contains("UNIQUE constraint failed")) {
                 throw new IllegalArgumentException("A title with this name already exists.");
@@ -289,11 +325,11 @@ public class Main {
         String confirmation = scanner.nextLine().trim().toLowerCase();
 
         if (!confirmation.equals("y")) {
-            System.out.println("Delete cancelled.");
+            CLIFormatter.printInfo("Delete cancelled.");
             return;
         }
 
         title.delete();
-        System.out.println("Title deleted successfully!");
+        CLIFormatter.printSuccess("Title deleted successfully!");
     }
 }
