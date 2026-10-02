@@ -33,7 +33,9 @@ public class Main {
             System.out.println("5. View all titles");
             System.out.println("6. View watch list");
             System.out.println("7. View reviews");
-            System.out.println("8. Exit");
+            System.out.println("8. Edit title");
+            System.out.println("9. Delete title");
+            System.out.println("10. Exit");
             System.out.print("Choose an option: ");
 
             String choice = scanner.nextLine().trim();
@@ -62,6 +64,12 @@ public class Main {
                         viewReviews();
                         break;
                     case "8":
+                        editTitle();
+                        break;
+                    case "9":
+                        deleteTitle();
+                        break;
+                    case "10":
                         running = false;
                         System.out.println("Goodbye!");
                         break;
@@ -202,5 +210,90 @@ public class Main {
                 }
             }
         }
+    }
+
+    private static void editTitle() throws SQLException {
+        System.out.print("Title name: ");
+        String titleName = scanner.nextLine().trim();
+
+        Title title = Title.getByName(titleName);
+        if (title == null) {
+            throw new IllegalArgumentException("Title not found: " + titleName);
+        }
+
+        System.out.println("Current title: " + title.getName());
+        System.out.print("New name (press Enter to keep '" + title.getName() + "'): ");
+        String newName = scanner.nextLine().trim();
+        if (!newName.isEmpty()) {
+            title.setName(newName);
+        }
+
+        System.out.println("Current type: " + title.getType());
+        System.out.print("New type (press Enter to keep '" + title.getType() + "'): ");
+        String newType = scanner.nextLine().trim();
+        if (!newType.isEmpty()) {
+            if (!newType.equals("Movie") && !newType.equals("TV Show")) {
+                throw new IllegalArgumentException("Type must be exactly 'Movie' or 'TV Show'");
+            }
+            title.setType(newType);
+        }
+
+        System.out.println("Current genre: " + title.getGenre());
+        System.out.print("New genre (press Enter to keep '" + title.getGenre() + "'): ");
+        String newGenre = scanner.nextLine().trim();
+        if (!newGenre.isEmpty()) {
+            title.setGenre(newGenre);
+        }
+
+        System.out.println("Current year: " + title.getYear());
+        System.out.print("New year (press Enter to keep '" + title.getYear() + "'): ");
+        String newYearStr = scanner.nextLine().trim();
+        if (!newYearStr.isEmpty()) {
+            try {
+                int newYear = Integer.parseInt(newYearStr);
+                title.setYear(newYear);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Year must be a valid number");
+            }
+        }
+
+        System.out.println("Current creator: " + title.getCreator());
+        System.out.print("New creator (press Enter to keep '" + title.getCreator() + "'): ");
+        String newCreator = scanner.nextLine().trim();
+        if (!newCreator.isEmpty()) {
+            title.setCreator(newCreator);
+        }
+
+        try {
+            title.update();
+            System.out.println("Title updated successfully!");
+        } catch (SQLException e) {
+            if (e.getMessage().contains("UNIQUE constraint failed")) {
+                throw new IllegalArgumentException("A title with this name already exists.");
+            }
+            throw e;
+        }
+    }
+
+    private static void deleteTitle() throws SQLException {
+        System.out.print("Title name: ");
+        String titleName = scanner.nextLine().trim();
+
+        Title title = Title.getByName(titleName);
+        if (title == null) {
+            throw new IllegalArgumentException("Title not found: " + titleName);
+        }
+
+        System.out.println("WARNING: Deleting this title will also delete its watch list entry and all reviews.");
+        System.out.print("Are you sure you want to delete '" + title.getName() + "'? (y/n): ");
+        String confirmation = scanner.nextLine().trim().toLowerCase();
+
+        if (!confirmation.equals("y")) {
+            System.out.println("Delete cancelled.");
+            return;
+        }
+
+        title.delete();
+        System.out.println("Title deleted successfully!");
     }
 }
