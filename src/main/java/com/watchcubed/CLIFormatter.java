@@ -4,7 +4,7 @@ import java.util.List;
 
 public class CLIFormatter {
     // ANSI escape codes for colors
-    private static final String RESET = "\u001B[0m";
+    protected static final String RESET = "\u001B[0m";
     protected static final String RED = "\u001B[31m";
     protected static final String GREEN = "\u001B[32m";
     protected static final String BLUE = "\u001B[34m";
