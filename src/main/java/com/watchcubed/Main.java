@@ -11,6 +11,12 @@ public class Main {
 
     public static void main(String[] args) {
         try {
+            for (String arg : args) {
+    if (arg.equalsIgnoreCase("hype") || arg.equalsIgnoreCase("--hype")) {
+        CLIFormatter.setActiveFormatter(new HypeFormatter());
+        break;
+            }
+        }
             DatabaseConnection.initializeTables();
             showMenu();
         } catch (SQLException e) {
