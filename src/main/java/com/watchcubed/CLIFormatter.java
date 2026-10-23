@@ -5,11 +5,28 @@ import java.util.List;
 public class CLIFormatter {
     // ANSI escape codes for colors
     private static final String RESET = "\u001B[0m";
-    private static final String RED = "\u001B[31m";
-    private static final String GREEN = "\u001B[32m";
-    private static final String BLUE = "\u001B[34m";
-    private static final String CYAN = "\u001B[36m";
+    protected static final String RED = "\u001B[31m";
+    protected static final String GREEN = "\u001B[32m";
+    protected static final String BLUE = "\u001B[34m";
+    protected static final String CYAN = "\u001B[36m";
     private static final int MAX_COL_WIDTH = 30;
+    private static CLIFormatter activeFormatter = new CLIFormatter();
+
+    public static void setActiveFormatter(CLIFormatter formatter) {
+        activeFormatter = formatter;
+    }
+
+    public String formatSuccess(String message) {
+        return colorText(message, GREEN);
+    }
+
+    public String formatError(String message) {
+        return colorText("Error: " + message, RED);
+    }
+
+    public String formatInfo(String message) {
+        return colorText(message, BLUE);
+    }
 
     /**
      * Clears the console screen
@@ -47,21 +64,21 @@ public class CLIFormatter {
      * Prints an error message in red
      */
     public static void printError(String message) {
-        System.out.println(colorText("Error: " + message, RED));
+        System.out.println(activeFormatter.formatError(message));
     }
 
     /**
      * Prints a success message in green
      */
     public static void printSuccess(String message) {
-        System.out.println(colorText(message, GREEN));
+        System.out.println(activeFormatter.formatSuccess(message));
     }
 
     /**
      * Prints an info message in blue
      */
     public static void printInfo(String message) {
-        System.out.println(colorText(message, BLUE));
+        System.out.println(activeFormatter.formatInfo(message));
     }
 
     /**
