@@ -1,6 +1,6 @@
 package com.watchcubed;
 
-public class HypeFormatter extends CLIFormatter {
+public class HypeFormatter extends Formatter {
     @Override
     public String formatSuccess(String message) {
         String loud = "\u001B[1m" + message.toUpperCase() + "!!!";
