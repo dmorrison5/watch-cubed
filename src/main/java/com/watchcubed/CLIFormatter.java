@@ -2,28 +2,25 @@ package com.watchcubed;
 
 import java.util.List;
 
-public class CLIFormatter {
-    // ANSI escape codes for colors
-    protected static final String RESET = "\u001B[0m";
-    protected static final String RED = "\u001B[31m";
-    protected static final String GREEN = "\u001B[32m";
-    protected static final String BLUE = "\u001B[34m";
-    protected static final String CYAN = "\u001B[36m";
+public class CLIFormatter extends Formatter {
     private static final int MAX_COL_WIDTH = 30;
-    private static CLIFormatter activeFormatter = new CLIFormatter();
+    private static Formatter activeFormatter = new CLIFormatter();
 
-    public static void setActiveFormatter(CLIFormatter formatter) {
+    public static void setActiveFormatter(Formatter formatter) {
         activeFormatter = formatter;
     }
 
+    @Override
     public String formatSuccess(String message) {
         return colorText(message, GREEN);
     }
 
+    @Override
     public String formatError(String message) {
         return colorText("Error: " + message, RED);
     }
 
+    @Override
     public String formatInfo(String message) {
         return colorText(message, BLUE);
     }
@@ -51,13 +48,6 @@ public class CLIFormatter {
             System.out.println((i + 1) + ". " + options[i]);
         }
         System.out.print("Choose an option: ");
-    }
-
-    /**
-     * Returns text colored with ANSI escape codes
-     */
-    public static String colorText(String text, String color) {
-        return color + text + RESET;
     }
 
     /**
